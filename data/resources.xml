@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<resources>
+	<set path = "images" />
+	<atlas>
+		<image file="backs/back.png"/>
+		<image file="ui/button.png"/>
+		<image file="ui/button2.png"/>	
+		<image file="ui/settings.png"/>	
+		<image file="sprites/logo.png"/>
+		<image file="sprites/finger.png"/>
+		<image file="sprites/joystick.png"/>
+	</atlas>
+
+	<set path = "fonts" />
+	<font file="main.fnt" />	
+	
+</resources>

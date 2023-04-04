@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{4d3b3bb3-261f-480b-97c0-78c6b34a9637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\oal">
+      <UniqueIdentifier>{45080d89-9f25-40ff-a913-74cd439c4cc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\null">
+      <UniqueIdentifier>{4d5c34d6-3f87-4725-a9e7-706035812907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Sound\libs">
+      <UniqueIdentifier>{68556f0e-01a8-4e86-b798-7deff9912633}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="flow">
+      <UniqueIdentifier>{987a0fcc-6569-445a-90e1-1017a34a9120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine">
+      <UniqueIdentifier>{55f460f4-6140-482b-a9ab-89fae71b50f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device">
+      <UniqueIdentifier>{7861b53d-79ab-4a0e-a544-94ce4debed9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Cpu">
+      <UniqueIdentifier>{3b618849-9fce-416f-82ee-0740b8a03ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Addons">
+      <UniqueIdentifier>{b54eeca9-51fb-439a-9f69-af64d1acbe12}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\sound\sound\MemoryStream.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\OggStream.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\ResSound.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\SoundHandle.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\SoundInstance.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\SoundPlayer.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\SoundSystem.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\WavStream.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\null\SoundHandleNull.cpp">
+      <Filter>Sound\null</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\null\SoundNull.cpp">
+      <Filter>Sound\null</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\null\SoundSystemNull.cpp">
+      <Filter>Sound\null</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\oal\SoundHandleOAL.cpp">
+      <Filter>Sound\oal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\oal\SoundOAL.cpp">
+      <Filter>Sound\oal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\oal\SoundSystemOAL.cpp">
+      <Filter>Sound\oal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\oal\StaticSoundHandleOAL.cpp">
+      <Filter>Sound\oal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\oal\StaticStreamOAL.cpp">
+      <Filter>Sound\oal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sound\sound\oal\StreamingSoundHandleOAL.cpp">
+      <Filter>Sound\oal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\flow\flow\Transition.cpp">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\flow\flow\flow.cpp">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\flow\flow\Stage.cpp">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\App.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Button.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CustomTween.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Func.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="../src/main.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Scene.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Device\Graphics.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Device\Io.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Device\Memory.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Device\SnapShot.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Cpu\Cpu.cpp">
+      <Filter>Source Files\Cpu</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\sound\sound\MemoryStream.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\OggStream.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\ResSound.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\Sound.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\SoundHandle.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\SoundInstance.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\SoundPlayer.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\SoundStream.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\SoundSystem.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\WavStream.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\null\SoundHandleNull.h">
+      <Filter>Sound\null</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\null\SoundNull.h">
+      <Filter>Sound\null</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\null\SoundSystemNull.h">
+      <Filter>Sound\null</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal\SoundHandleOAL.h">
+      <Filter>Sound\oal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal\SoundOAL.h">
+      <Filter>Sound\oal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal\SoundSystemOAL.h">
+      <Filter>Sound\oal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal\StaticSoundHandleOAL.h">
+      <Filter>Sound\oal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal\StaticStreamOAL.h">
+      <Filter>Sound\oal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\sound\sound\oal\StreamingSoundHandleOAL.h">
+      <Filter>Sound\oal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\flow\flow\Transition.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\flow\flow\flow.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\flow\flow\Stage.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\App.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Button.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CustomTween.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Func.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\main.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Scene.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Device\Graphics.h">
+      <Filter>Source Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Device\Io.h">
+      <Filter>Source Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Device\Memory.h">
+      <Filter>Source Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Device\SnapShot.h">
+      <Filter>Source Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\Cpu.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\DefineData.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\instructions.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\macros.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\tables.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\z80config.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Cpu\z80user.h">
+      <Filter>Source Files\Cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Addons\Addons.h">
+      <Filter>Addons</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

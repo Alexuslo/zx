@@ -32,12 +32,12 @@ class CButton : public Button
 	Point m_Distance;
 	
 public:
-	CButton(CApp *pApp, CScene *Scene, const char *Id, const char *Caption, const ResAnim *Texture = nullptr, const char *FontName = "default");
+	CButton(CApp *pApp, CScene *Scene, std::string Name, std::string Caption, std::string FontName, const ResAnim *Texture = nullptr);
 	~CButton();
 
 	//void update(const UpdateState &us) {}
 
-	void setText(const char *text);
+	void setText(std::string text);
 
 	spSprite GetShadov() const { return m_Shadow; }
 
@@ -174,8 +174,8 @@ class CSettingsButton : public CButton
 	float m_angleDelta = 0.0f;
 
 public:
-	CSettingsButton(CApp *pApp, CScene *Scene, const char *Id, const char *Caption, const ResAnim *Texture = nullptr, const char *FontName = "default") : 
-		CButton(pApp, Scene, Id, Caption, Texture, FontName)
+	CSettingsButton(CApp *pApp, CScene *Scene, std::string Name, std::string Caption, std::string FontName = "default", const ResAnim *Texture = nullptr) :
+		CButton(pApp, Scene, Name, Caption, FontName, Texture)
 	{ }
 
 	~CSettingsButton() { }

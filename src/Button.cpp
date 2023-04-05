@@ -2,11 +2,11 @@
 #include "App.h"
 #include "Scene.h"
 
-CButton::CButton(CApp *pApp, CScene *Scene, const char *Id, const char *Caption, const ResAnim *Texture/* = nullptr*/, const char *FontName/* = "default"*/) :
+CButton::CButton(CApp *pApp, CScene *Scene, std::string Name, std::string Caption, std::string FontName, const ResAnim *Texture) :
 m_pApp(pApp),
 m_Scene(Scene)
 {
-	setName(Id);
+	setName(Name);
 	
 	if (m_pApp->IsUseShadow())
 	{
@@ -21,7 +21,7 @@ m_Scene(Scene)
 		m_Shadow->setColor(ShadowColor);
 		m_Shadow->setAnchor(0.5f, 0.5f);
 		m_Shadow->setScale(ShadowScale);
-		m_Shadow->setName(Id);
+		m_Shadow->setName(Name);
 	}
 
 	if (Scene)
@@ -53,7 +53,7 @@ CButton::~CButton()
 	
 }
 
-void CButton::setText(const char *text)
+void CButton::setText(std::string text)
 {
 	m_TextField->setText(text);
 
@@ -533,7 +533,7 @@ m_Scene(scene)
 
 	struct InfoButton
 	{
-		const char *m_caption;
+		const char *m_Caption;
 		int m_mulX = 0;
 		int m_mulY = 0;
 		int m_priorityFactor = 0;
@@ -544,7 +544,7 @@ m_Scene(scene)
 		CallBackFunc m_func = nullptr;
 
 		InfoButton(const char *caption, int mulX, int mulY, int priorityFactor, float scaleX, float scaleY, CallBackFunc func) :
-			m_caption(caption),
+			m_Caption(caption),
 			m_mulX(mulX),
 			m_mulY(mulY),
 			m_priorityFactor(priorityFactor),
@@ -571,9 +571,9 @@ m_Scene(scene)
 	int idSuffix = 1;
 	for (auto i : infoButtons)
 	{
-		std::string idName = std::string(id) + "_" + std::to_string(idSuffix);
+		std::string Name = std::string(id) + "_" + std::to_string(idSuffix);
 
-		spCButton b = new CButton(pApp, nullptr, idName.c_str(), i.m_caption, pApp->getTexture("button2"));
+		spCButton b = new CButton(pApp, nullptr, Name, i.m_Caption, "Default", pApp->getTexture("button2"));
 
 		b->SetIndex(idSuffix);
 		b->SetSize(buttonSize * i.m_scaleX, buttonSize * i.m_scaleY);

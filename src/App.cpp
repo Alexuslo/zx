@@ -44,23 +44,23 @@ void CApp::InitInternal()
 	SoundSystem::create()->init(16);
 	SoundPlayer::initialize();
 
-	m_splayer.setResources(&m_resSfx);
-	m_splayer.setVolume(1.0f);
+	m_SoundPlayer.setResources(&m_ResSfx);
+	m_SoundPlayer.setVolume(1.0f);
 
-	m_resGfx.loadXML("resources.xml");
+	m_ResGfx.loadXML("resources.xml");
 	//m_resSfx.loadXML("sounds/res.xml");
 
 #ifdef EMSCRIPTEN
 	emscStartSoundsPreloading(resources);
 #endif
 
-	m_pDefaultFont = m_resGfx.getResFont("main");
-	m_stageSize = getStage()->getSize();
+	m_pDefaultFont = m_ResGfx.getResFont("main");
+	m_StageSize = getStage()->getSize();
 }
 
 CApp::~CApp() 
 {
-	Free();	
+	Destroy();	
 	
 	delete m_pInstance;
 }
@@ -73,11 +73,17 @@ void CApp::Init()
 	m_pInstance->initScenesAndDialogs();
 }
 
-void CApp::Free()
+void CApp::Destroy()
 {
-	m_pInstance->m_resGfx.free();
-	m_pInstance->m_splayer.stop();
-	m_pInstance->m_resSfx.free();
+	ObjectBase::dumpCreatedObjects();
+	flow::free();
+	core::release();
+	ObjectBase::dumpCreatedObjects();
+	ObjectBase::__stopTracingLeaks();
+
+	m_pInstance->m_ResGfx.free();
+	m_pInstance->m_SoundPlayer.stop();
+	m_pInstance->m_ResSfx.free();
 
 	SoundPlayer::free();
 	SoundSystem::free();
@@ -92,7 +98,7 @@ void CApp::Update()
 		m_pInstance->m_pUpdatedScene->update();
 
 	SoundSystem::get()->update();
-	m_pInstance->m_splayer.update();
+	m_pInstance->m_SoundPlayer.update();
 }
 
 
@@ -104,66 +110,76 @@ CApp *CApp::Get()
 	return m_pInstance;
 }
 
-spCScene CApp::getSceneById(int id, bool bIsScene)
+CScene *CApp::getSceneById(int id)
 {
-	std::list<spCScene> &scenes = bIsScene ? m_scenes : m_dialogs;
-	
-	auto it = std::find_if(scenes.begin(), scenes.end(), [id](auto scene) { 
-		
-		return scene->getId() == id; 
+	return getSceneByIdInternal(m_Scenes, id);
+}
+
+CScene *CApp::getSceneByName(const std::string& name)
+{
+	return getSceneByNameInternal(m_Scenes, name.c_str());
+}
+
+CScene *CApp::getSceneByName(const char* name)
+{
+	return getSceneByNameInternal(m_Scenes, name);
+}
+
+CScene *CApp::getDialogById(int id)
+{
+	return getSceneByIdInternal(m_Dialogs, id);
+}
+
+CScene *CApp::getDialogByName(const std::string &name)
+{
+	return getSceneByNameInternal(m_Dialogs, name.c_str());
+}
+
+CScene *CApp::getDialogByName(const char* name)
+{
+	return getSceneByNameInternal(m_Dialogs, name);
+}
+
+CScene *CApp::getSceneByIdInternal(std::vector<spCScene> &Collection, int id)
+{
+	auto it = std::find_if(Collection.begin(), Collection.end(), [id](auto pObject) {
+
+		return pObject->getId() == id;
 	});
 
-	if (it != m_scenes.end())
+	if (it != Collection.end())
 	{
 		m_pLastScene = it->get();
-		return *it;
+		return m_pLastScene;
 	}
 
 	return nullptr;
 }
 
-oxygine::intrusive_ptr<CScene> CApp::getSceneByName(const std::string& name, bool bIsScene)
+CScene *CApp::getSceneByNameInternal(std::vector<spCScene> &Collection, const std::string &name)
 {
-	return getSceneByName(name.c_str(), bIsScene);
+	return getSceneByNameInternal(Collection, name.c_str());
 }
 
-oxygine::intrusive_ptr<CScene> CApp::getSceneByName(const char* name, bool bIsScene)
+CScene *CApp::getSceneByNameInternal(std::vector<spCScene> &Collection, const char *name)
 {
-	std::list<spCScene>& scenes = bIsScene ? m_scenes : m_dialogs;
-	
-	auto it = std::find_if(scenes.begin(), scenes.end(), [name](oxygine::intrusive_ptr<CScene> scene) { 
-	
-		return scene->getName() == name; 
+	auto it = std::find_if(Collection.begin(), Collection.end(), [name](auto pObject) {
+
+		return pObject->getName() == name;
 	});
 
-	if (it != scenes.end())
+	if (it != Collection.end())
 	{
 		m_pLastScene = it->get();
-		return *it;
+		return m_pLastScene;
 	}
 
 	return nullptr;
 }
 
-
-spCScene CApp::getDialogById(int id)
+std::string CApp::getAutoName()
 {
-	return getSceneById(id, false);
-}
-
-spCScene CApp::getDialogByName(const std::string &name)
-{
-	return getSceneByName(name.c_str(), false);
-}
-
-spCScene CApp::getDialogByName(const char* name)
-{
-	return getSceneByName(name, false);
-}
-
-const char *CApp::getAutoName()
-{
-	return std::string("object_" + std::to_string(m_IdSuffix++)).c_str();
+	return std::string("object_" + std::to_string(m_IdSuffix++));
 }
 
 void CApp::deleteSceneById(int id)
@@ -229,10 +245,10 @@ spCScene CApp::newScene(std::function<void(spCScene)> sceneCreator /*= nullptr*/
 void CApp::addScene(spCScene scene, bool bIsScene/* = true*/)
 {
 	if (bIsScene)
-		m_scenes.push_back(scene);
+		m_Scenes.push_back(scene);
 
 	else
-		m_dialogs.push_back(scene);
+		m_Dialogs.push_back(scene);
 }
 
 spCScene CApp::newDialog(CScene *pParentScene, const char *dialogName, ETransitionType transitionType/* = ETransitionType::Fade*/,const char *textureName/* = "rect"*/, Vector2 size/* = { -1, -1 }*/)
@@ -327,12 +343,12 @@ void CApp::addDialog(spCScene scene)
 	addScene(scene, false);
 }
 
-template <class T> spCButton CApp::newButton(spCScene Scene, const char *Id, Vector2 position /*= {0.0f, 0.0f}*/, Vector2 size/* = { 150.0f, 44.0f }*/, const char *Caption /*= "no press!"*/, const char *TextureName /*= "rect"*/, bool bIsStd/* = true*/)
+template <class T> spCButton CApp::newButton(spCScene Scene, std::string Name, Vector2 position /*= {0.0f, 0.0f}*/, Vector2 size/* = { 150.0f, 44.0f }*/, std::string Caption /*= "no press!"*/, std::string TextureName /*= "rect"*/, bool bIsStd/* = true*/)
 {
 	ResAnim *Texture = nullptr;
 	if (TextureName != "rect")
 	{
-		Texture = m_resGfx.getResAnim(TextureName);
+		Texture = m_ResGfx.getResAnim(TextureName);
 	}
 	else
 	{
@@ -342,7 +358,7 @@ template <class T> spCButton CApp::newButton(spCScene Scene, const char *Id, Vec
 		Texture = const_cast<ResAnim *>(s->getResAnim());
 	}
 
-	spCButton b = new T(this, (Scene).get(), Id, Caption, Texture);
+	spCButton b = new T(this, (Scene).get(), Name, Caption, std::string("Default"), Texture);
 
 	b->setSize(size);
 	b->setAnchor(0.5f, 0.5f);
@@ -376,7 +392,7 @@ template <class T> spCButton CApp::newButton(spCScene Scene, const char *Id, Vec
 	return b;
 }
 
-template <class T> spCButton CApp::newButton(spCScene scene, const char *Id, std::function<void(spCButton)> buttonCreator /*= nullptr*/)
+template <class T> spCButton CApp::newButton(spCScene scene, std::string Name, std::function<void(spCButton)> buttonCreator /*= nullptr*/)
 {
 	spCButton b;
 	if (buttonCreator)
@@ -388,12 +404,12 @@ template <class T> spCButton CApp::newButton(spCScene scene, const char *Id, std
 		return b;
 	}
 
-	return  newButton<T>(scene, Id, { 0.0f, 0.0f }, { 150.0f, 44.0f }, "name", "rect", true);
+	return  newButton<T>(scene, Name, { 0.0f, 0.0f }, { 150.0f, 44.0f }, "name", "rect", true);
 }
 
 oxygine::ResAnim* CApp::getTexture(const char* textureName)
 {
-	return m_resGfx.getResAnim(textureName);
+	return m_ResGfx.getResAnim(textureName);
 }
 
 oxygine::ResAnim* CApp::getTexture(const std::string &textureName)
@@ -403,7 +419,7 @@ oxygine::ResAnim* CApp::getTexture(const std::string &textureName)
 
 oxygine::ResFont *CApp::getFont(const char *textureName)
 {
-	return m_resGfx.getResFont(textureName);
+	return m_ResGfx.getResFont(textureName);
 }
 
 oxygine::ResFont *CApp::getFont(const std::string &textureName)
@@ -417,7 +433,7 @@ void CApp::update()
 		m_pUpdatedScene->update();
 
 	SoundSystem::get()->update();
-	m_splayer.update();
+	m_SoundPlayer.update();
 }
 
 void CApp::render() 
@@ -495,7 +511,7 @@ void CApp::initScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
 
 			pApp->getSceneByName("splash scene")->finish();
 			flow::show(pApp->getSceneByName("main scene"));
-			pApp->SaveSceneUpdate();
+			pApp->PushSceneForUpdate();
 			//pApp->SetLastSceneForUpdate();
 			flow::show(pApp->getDialogByName("main menu"));
 			});

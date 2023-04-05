@@ -24,7 +24,7 @@ namespace bit
 		if (NumBit > MaxBits)
 			NumBit %= MaxBits;
 
-		return (bool)Data & (0x1 << NumBit);
+		return (bool)(Data & (0x1 << NumBit));
 	};
 };
 

@@ -91,10 +91,12 @@ typedef pugi::xml_node XmlNode;
 typedef pugi::xml_attribute XmlAttribute;
 
 typedef intrusive_ptr<CScene> spCScene;
-typedef std::list<spCScene> Scenes;
 typedef intrusive_ptr<CButton> spCButton;
 typedef intrusive_ptr<ClipRectActor> spClipRectActor;
 typedef intrusive_ptr<CCursorKeys> spCCursorKeys;
+
+using TScenes = std::vector<spCScene>;
+using TDialogs = std::vector<spCScene>;
 
 typedef unsigned int uint;
 typedef unsigned short word;

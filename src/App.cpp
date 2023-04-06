@@ -70,7 +70,7 @@ void CApp::Init()
 	m_pInstance = new CApp;
 	m_pInstance->InitInternal();
 
-	m_pInstance->initScenesAndDialogs();
+	m_pInstance->InitScenesAndDialogs();
 }
 
 void CApp::Destroy()
@@ -101,7 +101,6 @@ void CApp::Update()
 	m_pInstance->m_SoundPlayer.update();
 }
 
-
 CApp *CApp::Get()
 {
 	if (!m_pInstance)
@@ -112,89 +111,154 @@ CApp *CApp::Get()
 
 CScene *CApp::getSceneById(int id)
 {
-	return getSceneByIdInternal(m_Scenes, id);
+	return GetSceneInternal(m_Scenes, id);
 }
 
-CScene *CApp::getSceneByName(const std::string& name)
+CScene *CApp::getSceneByName(const std::string Name)
 {
-	return getSceneByNameInternal(m_Scenes, name.c_str());
+	return GetSceneInternal(m_Scenes, Name.c_str());
 }
 
-CScene *CApp::getSceneByName(const char* name)
+CScene *CApp::getSceneByName(const char* Name)
 {
-	return getSceneByNameInternal(m_Scenes, name);
+	return GetSceneInternal(m_Scenes, Name);
 }
 
 CScene *CApp::getDialogById(int id)
 {
-	return getSceneByIdInternal(m_Dialogs, id);
+	return GetSceneInternal(m_Dialogs, id);
 }
 
-CScene *CApp::getDialogByName(const std::string &name)
+CScene *CApp::getDialogByName(const std::string Name)
 {
-	return getSceneByNameInternal(m_Dialogs, name.c_str());
+	return GetSceneInternal(m_Dialogs, Name.c_str());
 }
 
-CScene *CApp::getDialogByName(const char* name)
+CScene *CApp::getDialogByName(const char* Name)
 {
-	return getSceneByNameInternal(m_Dialogs, name);
+	return GetSceneInternal(m_Dialogs, Name );
 }
 
-CScene *CApp::getSceneByIdInternal(std::vector<spCScene> &Collection, int id)
+void CApp::PushSceneForUpdate()
 {
-	auto it = std::find_if(Collection.begin(), Collection.end(), [id](auto pObject) {
+	m_StoredScenes.push_back(m_pUpdatedScene);
+	m_pUpdatedScene = nullptr;
+}
 
-		return pObject->getId() == id;
+void CApp::PopSceneForUpdate()
+{
+	if (!m_StoredScenes.empty())
+	{
+		m_pUpdatedScene = m_StoredScenes.back();
+		m_StoredScenes.pop_back();
+	}
+}
+
+void CApp::SwapSceneForUpdateWithTopStack()
+{
+	if (!m_StoredScenes.empty())
+	{
+		CScene *&pScene = m_StoredScenes.back();
+		std::swap(pScene, m_pUpdatedScene);
+	}
+}
+
+CScene *CApp::GetSceneInternal(std::vector<spCScene> &Collection, CApp::SceneData Data)
+{
+	bool bIdValid = Data.m_Id > 0;
+	bool bNameValid = Data.m_Name != "";
+
+	std::vector<spCScene>::iterator It = std::find_if(Collection.begin(), Collection.end(), [Data, bIdValid, bNameValid](auto pObject) {
+
+		return	(bIdValid && pObject->getId() == Data.m_Id) ||
+			(bNameValid && pObject->getName() == Data.m_Name);
 	});
 
-	if (it != Collection.end())
+	if (It != Collection.end())
 	{
-		m_pLastScene = it->get();
+		m_pLastScene = It->get();
 		return m_pLastScene;
 	}
 
 	return nullptr;
 }
 
-CScene *CApp::getSceneByNameInternal(std::vector<spCScene> &Collection, const std::string &name)
+void CApp::DeleteSceneById(int id)
 {
-	return getSceneByNameInternal(Collection, name.c_str());
+	DeleteSceneInternal(m_Scenes, id);
 }
 
-CScene *CApp::getSceneByNameInternal(std::vector<spCScene> &Collection, const char *name)
+void CApp::DeleteSceneByName(const std::string Name)
 {
-	auto it = std::find_if(Collection.begin(), Collection.end(), [name](auto pObject) {
+	DeleteSceneInternal(m_Scenes, Name.c_str());
+}
 
-		return pObject->getName() == name;
+void CApp::DeleteSceneByName(const char *Name)
+{
+	DeleteSceneInternal(m_Scenes, Name);
+}
+
+void CApp::DeleteDialogById(int id)
+{
+	DeleteSceneInternal(m_Dialogs, id);
+}
+
+void CApp::DeleteDialogByName(const std::string Name)
+{
+	DeleteSceneInternal(m_Dialogs, Name.c_str());
+}
+
+void CApp::DeleteDialogByName(const char *Name)
+{
+	DeleteSceneInternal(m_Dialogs, Name);
+}
+
+void CApp::DeleteSceneInternal(std::vector<spCScene> &Collection, CApp::SceneData Data)
+{
+	bool bIdValid = Data.m_Id > 0;
+	bool bNameValid = Data.m_Name != "";
+
+	auto It1 = std::find_if(Collection.begin(), Collection.end(), [Data, bIdValid, bNameValid](auto pObject) {
+
+		return	(bIdValid && pObject->getId() == Data.m_Id) ||
+			(bNameValid && pObject->getName() == Data.m_Name);
 	});
 
-	if (it != Collection.end())
+	if (It1 != Collection.end())
 	{
-		m_pLastScene = it->get();
-		return m_pLastScene;
-	}
+		if (m_pLastScene == It1->get())
+			m_pLastScene = nullptr;
 
-	return nullptr;
+		if (!m_StoredScenes.empty())
+		{
+			auto It2 = std::find(m_StoredScenes.begin(), m_StoredScenes.end(), *It1);
+
+			if (It2 != m_StoredScenes.end())
+				m_StoredScenes.erase(It2);
+		}
+
+		Collection.erase(It1);
+	}
 }
 
-std::string CApp::getAutoName()
+// template <class T>
+// std::vector<T>::iterator  CApp::FindScene(std::vector<T> &Collection, CApp::SceneData Data)
+// {
+// 	bool bIdValid = Data.m_Id > 0;
+// 	bool bNameValid = Data.m_Name != "";
+// 
+// 	std::vector<T>::iterator It = std::find_if(Collection.begin(), Collection.end(), [Data, bIdValid, bNameValid](auto pObject) {
+// 
+// 		return	(bIdValid && pObject->getId() == Data.m_Id) ||
+// 			(bNameValid && pObject->getName() == Data.m_Name);
+// 	});
+// 
+// 	return It;
+// }
+
+std::string CApp::GetAutoName()
 {
 	return std::string("object_" + std::to_string(m_IdSuffix++));
-}
-
-void CApp::deleteSceneById(int id)
-{
-
-}
-
-void CApp::deleteSceneByName(const std::string &name)
-{
-	
-}
-
-void CApp::deleteSceneByName(const char* name)
-{
-
 }
 
 spCScene CApp::newScene(const char *sceneName, const char *textureName/* = "rect"*/, Vector2 size/* = { -1, -1 }*/)
@@ -211,20 +275,20 @@ spCScene CApp::newScene(const char *sceneName, const char *textureName/* = "rect
 	if (sceneName != "")
 		s->setName(sceneName);
 	else
-		s->setName(getAutoName());
+		s->setName(GetAutoName());
 
 	if (textureName == "rect")
 		s->addBackSprite(new ColorRectSprite, Color(25, 25, 25, 200));
 	else if (textureName == "box sprite")
 		s->addBackSprite(new Box9Sprite, Color(25, 25, 25, 200));
 	else
-		s->addBackSprite(getTexture(textureName), { -1.0f, -1.0f }, { -1.0f, -1.0f }, true);
+		s->addBackSprite(GetTexture(textureName), { -1.0f, -1.0f }, { -1.0f, -1.0f }, true);
 
 	s->getHolder()->setSize(getStage()->getSize());
 	//flow::TransitionFade::assign(s);
 	//flow::TransitionShutters::assign(s);
 
-	addScene(s, false);
+	AddScene(s);
 
 	return s;
 }
@@ -235,21 +299,23 @@ spCScene CApp::newScene(std::function<void(spCScene)> sceneCreator /*= nullptr*/
 	if (sceneCreator)
 	{
 		sceneCreator(s);
-		addScene(s);
+		AddScene(s);
 		return s;
 	}
 
 	return newScene("unnamed", "rect", { -1, -1 });
 }
 
-void CApp::addScene(spCScene scene, bool bIsScene/* = true*/)
+void CApp::AddScene(spCScene pScene)
 {
-	if (bIsScene)
-		m_Scenes.push_back(scene);
-
-	else
-		m_Dialogs.push_back(scene);
+	AddSceneInternal(m_Scenes, pScene);
 }
+
+void CApp::AddSceneInternal(std::vector<spCScene> &Collection, spCScene pScene)
+{
+	Collection.push_back(pScene);
+}
+
 
 spCScene CApp::newDialog(CScene *pParentScene, const char *dialogName, ETransitionType transitionType/* = ETransitionType::Fade*/,const char *textureName/* = "rect"*/, Vector2 size/* = { -1, -1 }*/)
 {
@@ -269,14 +335,14 @@ spCScene CApp::newDialog(CScene *pParentScene, const char *dialogName, ETransiti
 	if (dialogName != "")
 		s->setName(dialogName);
 	else
-		s->setName(getAutoName());
+		s->setName(GetAutoName());
 
 	if (textureName == "rect")
 		s->addBackSprite(new ColorRectSprite, Color(25, 25, 25, 200));
 	else if (textureName == "box sprite")
 		s->addBackSprite(new Box9Sprite, Color(25, 25, 25, 200));
 	else
-		s->addBackSprite(getTexture(textureName), { -1.0f, -1.0f }, { -1.0f, -1.0f }, true, 150);
+		s->addBackSprite(GetTexture(textureName), { -1.0f, -1.0f }, { -1.0f, -1.0f }, true, 150);
 	
 	switch (transitionType)
 	{
@@ -319,7 +385,7 @@ spCScene CApp::newDialog(CScene *pParentScene, const char *dialogName, ETransiti
 		break;
 	}
 		
-	addScene(s, false);
+	AddDialog(s);
 
 	return s;
 }
@@ -331,19 +397,19 @@ spCScene CApp::newDialog(CScene *pParentScene, std::function<void(spCScene)> dia
 	if (dialogCreator)
 	{
 		dialogCreator(s);
-		addScene(s, false);
+		AddDialog(s);
 		return s;
 	}
 
 	return newDialog(pParentScene, "unnamed", ETransitionType::Fade, "rect", { -1, -1 });
 }
 
-void CApp::addDialog(spCScene scene)
+void CApp::AddDialog(spCScene pScene)
 {
-	addScene(scene, false);
+	AddSceneInternal(m_Dialogs, pScene);
 }
 
-template <class T> spCButton CApp::newButton(spCScene Scene, std::string Name, Vector2 position /*= {0.0f, 0.0f}*/, Vector2 size/* = { 150.0f, 44.0f }*/, std::string Caption /*= "no press!"*/, std::string TextureName /*= "rect"*/, bool bIsStd/* = true*/)
+template <class T> spCButton CApp::NewButton(spCScene Scene, std::string Name, Vector2 position /*= {0.0f, 0.0f}*/, Vector2 size/* = { 150.0f, 44.0f }*/, std::string Caption /*= "no press!"*/, std::string TextureName /*= "rect"*/, bool bIsStd/* = true*/)
 {
 	ResAnim *Texture = nullptr;
 	if (TextureName != "rect")
@@ -392,7 +458,7 @@ template <class T> spCButton CApp::newButton(spCScene Scene, std::string Name, V
 	return b;
 }
 
-template <class T> spCButton CApp::newButton(spCScene scene, std::string Name, std::function<void(spCButton)> buttonCreator /*= nullptr*/)
+template <class T> spCButton CApp::NewButton(spCScene scene, std::string Name, std::function<void(spCButton)> buttonCreator /*= nullptr*/)
 {
 	spCButton b;
 	if (buttonCreator)
@@ -407,51 +473,42 @@ template <class T> spCButton CApp::newButton(spCScene scene, std::string Name, s
 	return  newButton<T>(scene, Name, { 0.0f, 0.0f }, { 150.0f, 44.0f }, "name", "rect", true);
 }
 
-oxygine::ResAnim* CApp::getTexture(const char* textureName)
+oxygine::ResAnim* CApp::GetTexture(const char* textureName)
 {
 	return m_ResGfx.getResAnim(textureName);
 }
 
-oxygine::ResAnim* CApp::getTexture(const std::string &textureName)
+oxygine::ResAnim* CApp::GetTexture(const std::string &textureName)
 {
-	return getTexture(textureName.c_str());
+	return GetTexture(textureName.c_str());
 }
 
-oxygine::ResFont *CApp::getFont(const char *textureName)
+oxygine::ResFont *CApp::GetFont(const char *textureName)
 {
 	return m_ResGfx.getResFont(textureName);
 }
 
-oxygine::ResFont *CApp::getFont(const std::string &textureName)
+oxygine::ResFont *CApp::GetFont(const std::string &textureName)
 {
-	return getFont(textureName.c_str());
+	return GetFont(textureName.c_str());
 }
 
-void CApp::update() 
-{
-	if (m_pUpdatedScene)
-		m_pUpdatedScene->update();
-
-	SoundSystem::get()->update();
-	m_SoundPlayer.update();
-}
-
-void CApp::render() 
+void CApp::Render() 
 {
 	
 }
 
-void CApp::initScenesAndDialogs()
+void CApp::InitScenesAndDialogs()
 {
-	initScenesAndDialogs("none");
+	InitScenesAndDialogs("none");
 }
 
-void CApp::initScenesAndDialogs(const std::string& nameXmlFile /* = "none"*/)
+void CApp::InitScenesAndDialogs(const std::string& nameXmlFile /* = "none"*/)
 {
-	initScenesAndDialogs(nameXmlFile.c_str());
+	InitScenesAndDialogs(nameXmlFile.c_str());
 }
 
-void CApp::initScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
+void CApp::InitScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
 {
 	XmlDocument m_XmlFile;
 	XmlParseResult m_Result;
@@ -492,7 +549,7 @@ void CApp::initScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
 		sc->setName("root scene");
 		sc->addBackSprite(spr, { -1.0f, -1.0f }, { -1.0f, -1.0f }, true);
 
-		addScene(sc, true);
+		AddScene(sc);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -502,7 +559,7 @@ void CApp::initScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
 		sc = new CScene(this);
 		sc->setName("splash scene");
 		spr = new Sprite();
-		spr->setResAnim(getTexture("logo"));
+		spr->setResAnim(GetTexture("logo"));
 		sc->addBackSprite(spr, { -1.0f, -1.0f }, { 1.0f, 1.0f }, true);
 		spr->setAlpha(0);
 		spr->addTween(Sprite::TweenAlpha(255), 1000, 1, false, 1000);
@@ -518,7 +575,7 @@ void CApp::initScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
 		sc->setId(idCounter++);
 		flow::TransitionFade::assign(sc);
 
-		addScene(sc, true);
+		AddScene(sc);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -531,18 +588,20 @@ void CApp::initScenesAndDialogs(const char *nameXmlFile /* = "none"*/)
 		sc->setName("main scene");
 
 		spr = new Sprite;
-		spr->setResAnim(getTexture("back"));
+		spr->setResAnim(GetTexture("back"));
 
 		UberShaderProgram *shader = new UberShaderProgram();
-		shader->init(STDRenderer::uberShaderBody, R"(
-#define MODIFY_BASE_PRE
-uniform lowp vec4 Value;
-lowp vec4 modify_base_pre(lowp vec4 base)
-{
-lowp float c = (base.r + base.g + base.b) / 3.0;
-return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
-}
-        )");
+		shader->init(STDRenderer::uberShaderBody, 
+			R"(
+				#define MODIFY_BASE_PRE
+				uniform lowp vec4 Value;
+
+				lowp vec4 modify_base_pre(lowp vec4 base)
+				{
+					lowp float c = (base.r + base.g + base.b) / 3.0;
+					return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
+				}
+			)");
 
 // 		shader->init(STDRenderer::uberShaderBody, R"(
 //                                                      #define MODIFY_BASE_PRE
@@ -569,14 +628,14 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		CJoystick *j = new CJoystick(this, sc.get());
 
 		Vector2 pos = sc->getHolder()->getSize();
-		b = newButton<CButton>(sc, getAutoName(), Vector2(pos.x - sizeButton.x, pos.y - sizeButton.y * 3), sizeButton, "continue\nstart", "button2");
+		b = NewButton<CButton>(sc, GetAutoName(), Vector2(pos.x - sizeButton.x, pos.y - sizeButton.y * 3), sizeButton, "continue\nstart", "button2");
 		b->AddVisualFunc();
 		b->addClickListener([scene = sc](Event *e) {
 
 			(static_cast<CDevice *>(scene->GetBase()))->SetNeedPressEnterOrNull();
 			});
 
-		b = newButton<CButton>(sc, getAutoName(), sc->getHolder()->getSize() - sizeButton, sizeButton, "FIRE", "button2");
+		b = NewButton<CButton>(sc, GetAutoName(), sc->getHolder()->getSize() - sizeButton, sizeButton, "FIRE", "button2");
 		b->AddVisualFunc();
 
 
@@ -587,7 +646,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		
 		CDevice *device = static_cast<CDevice *>(const_cast<void *>(sc->getUserData()));
 
-		b = newButton<CSettingsButton>(sc, getAutoName(), { sc->getHolder()->getWidth() - sizeButton.x / 1.5f, sizeButton.y / 1.5f }, sizeButton, "", "settings");
+		b = NewButton<CSettingsButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() - sizeButton.x / 1.5f, sizeButton.y / 1.5f }, sizeButton, "", "settings");
 		
 		CSettingsButton *sb = static_cast<CSettingsButton *>((b).get());
 		b->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
@@ -599,7 +658,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		ck->attachTo(sc->GetControlsActor());
 		j->attachTo(sc->GetControlsActor());
 
-		addScene(sc, true);
+		AddScene(sc);
 	}
 
 	CScene *pParentScene = (sc).get();
@@ -610,7 +669,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		sizeScene = Vector2(getStage()->getHeight() * 0.9f, getStage()->getWidth() * 0.5f);
 		sc = newDialog(pParentScene, "options", ETransitionType::FadeFromPoint, "rect", sizeScene);
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
@@ -618,7 +677,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 
 		Vector2 position = Vector2(sc->getHolder()->getWidth() / 2, sc->getHolder()->getHeight() - sizeButton.y);
 		
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "exit", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "exit", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			flow::show(pApp->getDialogByName("exit"));
@@ -628,7 +687,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		sc->addTextField("Options", position, static_cast<int>(sizeButton.y));
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "new game", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "new game", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			CDevice *device = static_cast<CDevice *>(pApp->getSceneByName("main scene")->GetBase());
@@ -639,28 +698,28 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "load state", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "load state", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			flow::show(pApp->getDialogByName("load"));
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "save state", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "save state", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			flow::show(pApp->getDialogByName("save"));
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "sound", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "sound", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "advanced", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "advanced", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			//auto child = static_cast<CDevice *>(pApp->getSceneByName("main scene")->GetBase());
@@ -692,7 +751,6 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 
 				pass = true;
 			}
-
 			else
 			{
 				UberShaderProgram *shader = new UberShaderProgram();
@@ -711,20 +769,21 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 				spr->_mat->copyTo(mat);
 				mat._uberShader = shader;
 				spr->_mat = mc().cache(mat);
+
 				pass = false;
 			}
 
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "return to game", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "return to game", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
 			pApp->SetLastSceneForUpdate();
 			});
 
-		addScene(sc, false);
+		AddScene(sc);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -734,7 +793,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		sizeScene = Vector2(getStage()->getHeight() * 0.7f, getStage()->getWidth() * 0.4f);
 		sc = newDialog(pParentScene, "main menu", ETransitionType::FadeFromPoint, "rect", sizeScene);
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			CDevice *device = static_cast<CDevice *>(pApp->getSceneByName("main scene")->GetBase());
@@ -748,7 +807,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		CDevice *pDevice = static_cast<CDevice *>(getSceneByName("main scene")->GetBase());
 			   
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "continue game", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "continue game", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([device = pDevice, self = b, Dialog = sc](Event *e) {
 
 			device->LoadSnapShot("f/cont.esf");
@@ -758,7 +817,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "new game", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "new game", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([device = pDevice, self = b, Dialog = sc](Event *e) {
 
 			device->LoadSnapShot("f/snap.esf");
@@ -768,7 +827,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 			});
 		
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "load game", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "load game", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([device = pDevice, pApp = this, self = b, Dialog = sc](Event *e) {
 			
 			device->Run();
@@ -776,14 +835,14 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 			});
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "exit", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "exit", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([device = pDevice, pApp = this, self = b, Dialog = sc](Event *e) {
 
 			device->Run();
 			flow::show(pApp->getDialogByName("exit"));
 			});
 
-		addScene(sc, false);
+		AddDialog(sc);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -793,14 +852,14 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		sizeScene = Vector2(getStage()->getHeight() * 0.9f, getStage()->getWidth() * 0.5f);
 		sc = newDialog(pParentScene, "save", ETransitionType::FadeFromPoint, "rect", sizeScene);
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
-			});
+		});
 
 		Vector2 position = Vector2(sc->getHolder()->getWidth() / 2, sc->getHolder()->getHeight() - sizeButton.y);
-		
+
 		position.y = sizeButton.y;
 		sc->addTextField("Save state", position, static_cast<int>(sizeButton.y));
 
@@ -810,7 +869,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		{
 			std::string fullName = name + std::to_string(i);
 			position.y += incValue;
-			b = newButton<CButton>(sc, getAutoName(), position, sizeButton, fullName.c_str(), "rect");
+			b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, fullName.c_str(), "rect");
 			b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([num = i, pApp = this, self = b, parentScene = pParentScene, dialog = sc](Event *e) {
 
 				file::makeDirectory("f");
@@ -824,13 +883,13 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		}
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "return", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "return", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
 			});
 
-		addScene(sc, false);
+		AddScene(sc);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -840,7 +899,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		sizeScene = Vector2(getStage()->getHeight() * 0.9f, getStage()->getWidth() * 0.5f);
 		sc = newDialog(pParentScene, "load", ETransitionType::FadeFromPoint, "rect", sizeScene);
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
@@ -857,7 +916,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		{
 			std::string fullName = name + std::to_string(i);
 			position.y += incValue;
-			b = newButton<CButton>(sc, getAutoName(), position, sizeButton, fullName.c_str(), "rect");
+			b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, fullName.c_str(), "rect");
 			b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([num = i, pApp = this, self = b, parentScene = pParentScene, dialog = sc](Event *e) {
 
 				std::string name = "f/" +  std::to_string(num) + ".esf";
@@ -871,13 +930,13 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 		}
 
 		position.y += incValue;
-		b = newButton<CButton>(sc, getAutoName(), position, sizeButton, "return", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), position, sizeButton, "return", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
 			});
 
-		addScene(sc, false);
+		AddScene(sc);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -888,19 +947,19 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 
 		sc->addTextField("Are you leaving us?", { 0.0f, static_cast<float>(fontSize) }, fontSize);
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() - 20, 20 }, { 30, 30 }, "X", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
 			});
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() / 2, sc->getHolder()->getHeight() - 44 }, { 150, 44 }, "cancel", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() / 2, sc->getHolder()->getHeight() - 44 }, { 150, 44 }, "cancel", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			Dialog->finish();
 			});
 
-		b = newButton<CButton>(sc, getAutoName(), { sc->getHolder()->getWidth() / 2, sc->getHolder()->getHeight() - 128 }, { 150, 44 }, "exit", "rect");
+		b = NewButton<CButton>(sc, GetAutoName(), { sc->getHolder()->getWidth() / 2, sc->getHolder()->getHeight() - 128 }, { 150, 44 }, "exit", "rect");
 		b->AddOverIn()->AddOverOut()->SetClickType(EClickType::AddSpring)->addClickListener([pApp = this, self = b, Dialog = sc](Event *e) {
 
 			CDevice *device = static_cast<CDevice *>(pApp->getSceneByName("main scene")->GetBase());
@@ -914,7 +973,7 @@ return mix(vec4(c, c, c, base.a), base, 1.0 - Value.r);
 			Dialog->finish();
 			});
 
-		addScene(sc, false);
+		AddScene(sc);
 
 	}
 

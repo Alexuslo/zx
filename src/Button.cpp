@@ -37,7 +37,7 @@ m_Scene(Scene)
 	m_TextField->attachTo(this);
 	m_TextField->setFontSize(static_cast<int>(getHeight() / 1.6f));
 
-	ResFont *font = m_pApp->getDefaultFont();
+	ResFont *font = m_pApp->GetDefaultFont();
 
 	TextStyle style = TextStyle(font).withColor(Color::White).alignMiddle();
 	m_TextField->setStyle(style);
@@ -573,7 +573,7 @@ m_Scene(scene)
 	{
 		std::string Name = std::string(id) + "_" + std::to_string(idSuffix);
 
-		spCButton b = new CButton(pApp, nullptr, Name, i.m_Caption, "Default", pApp->getTexture("button2"));
+		spCButton b = new CButton(pApp, nullptr, Name, i.m_Caption, "Default", pApp->GetTexture("button2"));
 
 		b->SetIndex(idSuffix);
 		b->SetSize(buttonSize * i.m_scaleX, buttonSize * i.m_scaleY);
@@ -716,14 +716,14 @@ CJoystick::CJoystick(CApp *pApp, CScene *scene) :
 	addEventListener(TouchEvent::MOVE, CLOSURE(this, &CJoystick::onEvent));
 
 	m_finger = new Sprite;
-	m_finger->setResAnim(m_pApp->getTexture("finger"));
+	m_finger->setResAnim(m_pApp->GetTexture("finger"));
 	m_finger->attachTo(this);
 	m_finger->setVisible(false);
 	m_finger->setAnchor(Vector2(0.5f, 0.5f));
 	m_finger->setTouchEnabled(false);
 
 	m_Center = new Sprite;
-	m_Center->setResAnim(m_pApp->getTexture("finger"));
+	m_Center->setResAnim(m_pApp->GetTexture("finger"));
 	m_Center->attachTo(this);
 	m_Center->setVisible(false);
 	m_Center->setAnchor(Vector2(0.5f, 0.5f));

@@ -328,7 +328,7 @@ void CScene::addTextField(const char *text, Vector2  pos/* = { 0.0f, 0.0f }*/, i
 	textField->attachTo(m_Controls);
 	textField->setFontSize(size);
 
-	ResFont *font = m_pApp->getDefaultFont();
+	ResFont *font = m_pApp->GetDefaultFont();
 
 	TextStyle style = TextStyle(font).withColor(Color::White).alignMiddle();
 	textField->setStyle(style);

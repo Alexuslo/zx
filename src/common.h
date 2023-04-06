@@ -15,6 +15,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <queue>
 #include <stack>
 #include "math.h"
 #include <fstream>
@@ -23,6 +24,7 @@
 #include <iostream>
 #include <string>
 #include "Addons/Addons.h"
+#include <algorithm>
 
 #define PI 3.1417f
 #define PI_2 1.5709‬f
